@@ -1,7 +1,11 @@
 package main
 
-import "github.com/pudgekim/gocoin/explorer"
+import (
+	"github.com/pudgekim/gocoin/explorer"
+	"github.com/pudgekim/gocoin/rest"
+)
 
 func main() {
-	explorer.Start()
+	go rest.Start(3030)
+	explorer.Start(4040)
 }

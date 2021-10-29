@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	port string = ":3030"
 	// main.go는 explorer 밖에 있으므로 explorer/ 를 붙여줘야함
 	templateDir string = "explorer/templates/"
 )
@@ -40,14 +39,15 @@ func add(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "add", nil)
 }
 
-func Start() {
+func Start(port int) {
+	handler := http.NewServeMux()
 	// 여기서 pages 하위에 있는 것들을 glob함
 	templates = template.Must(template.ParseGlob(templateDir + "pages/*.gohtml"))
 	// 위에서 만들어진 templates에 추가로 partials 하위 파일들을 glob
 	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.gohtml"))
 
-	http.HandleFunc("/", home)
-	http.HandleFunc("/add", add)
+	handler.HandleFunc("/", home)
+	handler.HandleFunc("/add", add)
 	fmt.Println("Listening on port:", port)
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handler))
 }
