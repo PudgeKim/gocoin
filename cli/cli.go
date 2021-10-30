@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/pudgekim/gocoin/explorer"
 	"github.com/pudgekim/gocoin/rest"
-	"os"
+	"runtime"
 )
 
 func usage() {
@@ -13,7 +13,7 @@ func usage() {
 	fmt.Println()
 	fmt.Println("-port=4000    Start the HTML Explorer")
 	fmt.Println("-mode=rest:   Choose between 'html' and 'rest'")
-	os.Exit(0)
+	runtime.Goexit()
 }
 
 func Start() {

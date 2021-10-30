@@ -22,7 +22,7 @@ type homeData struct {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.BlockChain().AllBlocks()}
+	data := homeData{"Home", nil}
 	templates.ExecuteTemplate(w, "home", data)
 }
 

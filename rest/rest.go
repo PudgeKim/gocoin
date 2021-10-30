@@ -8,7 +8,6 @@ import (
 	"github.com/pudgekim/gocoin/utils"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var port string
@@ -48,12 +47,17 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 		},
 		{
 			URL:         url("/blocks"),
+			Method:      "GET",
+			Description: "See All Blocks",
+		},
+		{
+			URL:         url("/blocks"),
 			Method:      "POST",
 			Description: "Add a block",
 			Payload:     "data:string",
 		},
 		{
-			URL:         url("/blocks/{height}"),
+			URL:         url("/blocks/{hash}"),
 			Method:      "GET",
 			Description: "See a block",
 		},
@@ -64,8 +68,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(blockchain.BlockChain().AllBlocks())
+		json.NewEncoder(w).Encode(blockchain.BlockChain().Blocks())
 	case http.MethodPost:
 		var addBlockBody addBlockBody
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
@@ -77,9 +80,8 @@ func blocks(w http.ResponseWriter, r *http.Request) {
 
 func block(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["height"])
-	utils.HandleErr(err)
-	block, err := blockchain.BlockChain().GetBlock(id)
+	hash := vars["hash"]
+	block, err := blockchain.FindBlock(hash)
 	encoder := json.NewEncoder(w)
 	if err == blockchain.ErrNotFound {
 		encoder.Encode(errorResponse{fmt.Sprint(err)})
@@ -102,6 +104,6 @@ func Start(portNumber int) {
 	router.Use(jsonContentTypeMiddleware)
 	router.HandleFunc("/", documentation).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
-	router.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
+	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 	log.Fatal(http.ListenAndServe(port, router))
 }
