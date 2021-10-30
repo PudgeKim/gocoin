@@ -65,11 +65,11 @@ func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
+		json.NewEncoder(w).Encode(blockchain.BlockChain().AllBlocks())
 	case http.MethodPost:
 		var addBlockBody addBlockBody
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
-		blockchain.GetBlockChain().AddBlock(addBlockBody.Message)
+		blockchain.BlockChain().AddBlock(addBlockBody.Message)
 		w.WriteHeader(http.StatusCreated)
 	}
 
@@ -79,7 +79,7 @@ func block(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["height"])
 	utils.HandleErr(err)
-	block, err := blockchain.GetBlockChain().GetBlock(id)
+	block, err := blockchain.BlockChain().GetBlock(id)
 	encoder := json.NewEncoder(w)
 	if err == blockchain.ErrNotFound {
 		encoder.Encode(errorResponse{fmt.Sprint(err)})
