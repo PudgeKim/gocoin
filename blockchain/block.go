@@ -1,22 +1,26 @@
 package blockchain
 
 import (
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"github.com/pudgekim/gocoin/db"
 	"github.com/pudgekim/gocoin/utils"
+	"strings"
+	"time"
 )
 
 type Block struct {
-	Data     string `json:"data"`
-	Hash     string `json:"hash"`
-	PrevHash string `json:"prevHash,omitempty"`
-	Height   int    `json:"height"`
+	Hash         string `json:"hash"`
+	PrevHash     string `json:"prevHash,omitempty"`
+	Height       int    `json:"height"`
+	Difficulty   int    `json:"difficulty"`
+	Nonce        int    `json:"nonce"`
+	Timestamp    int    `json:"timestamp"`
+	Transactions []*Tx  `json:"transactions"`
 }
 
 func (b *Block) persist() {
-	db.SaveBlock(b.Hash, utils.ToBytes(b))
+	db.SaveCheckpoint(b.Hash, utils.ToBytes(b))
 }
 
 var ErrNotFound = errors.New("block not found")
@@ -35,15 +39,31 @@ func FindBlock(hash string) (*Block, error) {
 	return block, nil
 }
 
-func createBlock(data string, prevHash string, height int) *Block {
-	block := Block{
-		Data:     data,
-		Hash:     "",
-		PrevHash: prevHash,
-		Height:   height,
+func (b *Block) mine() {
+	target := strings.Repeat("0", b.Difficulty)
+	for {
+		b.Timestamp = int(time.Now().Unix())
+		hash := utils.Hash(b)
+		fmt.Printf("Target:%s\nHash:%s\nNonce:%d\n\n", target, hash, b.Nonce)
+		if strings.HasPrefix(hash, target) {
+			b.Hash = hash
+			break
+		} else {
+			b.Nonce++
+		}
 	}
-	payload := block.Data + block.PrevHash + fmt.Sprint(block.Height)
-	block.Hash = fmt.Sprintf("%x", sha256.Sum256([]byte(payload)))
+}
+
+func createBlock(prevHash string, height int) *Block {
+	block := Block{
+		Hash:         "",
+		PrevHash:     prevHash,
+		Height:       height,
+		Difficulty:   BlockChain().difficulty(),
+		Nonce:        0,
+		Transactions: []*Tx{makeCoinbaseTx("kim")},
+	}
+	block.mine()
 	block.persist()
 	return &block
 }

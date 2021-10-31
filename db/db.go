@@ -36,7 +36,7 @@ func Close() {
 }
 
 // key=hash, value=block(byte)
-func SaveBlock(hash string, data []byte) {
+func SaveCheckpoint(hash string, data []byte) {
 	err := DB().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blocksBucket))
 		err := bucket.Put([]byte(hash), data)
