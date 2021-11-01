@@ -13,7 +13,7 @@ type Block struct {
 	Hash         string `json:"hash"`
 	PrevHash     string `json:"prevHash,omitempty"`
 	Height       int    `json:"height"`
-	Difficulty   int    `json:"difficulty"`
+	Difficulty   int    `json:"getDifficulty"`
 	Nonce        int    `json:"nonce"`
 	Timestamp    int    `json:"timestamp"`
 	Transactions []*Tx  `json:"transactions"`
@@ -54,16 +54,16 @@ func (b *Block) mine() {
 	}
 }
 
-func createBlock(prevHash string, height int) *Block {
+func createBlock(prevHash string, height int, diff int) *Block {
 	block := Block{
-		Hash:         "",
-		PrevHash:     prevHash,
-		Height:       height,
-		Difficulty:   BlockChain().difficulty(),
-		Nonce:        0,
-		Transactions: []*Tx{makeCoinbaseTx("kim")},
+		Hash:       "",
+		PrevHash:   prevHash,
+		Height:     height,
+		Difficulty: diff,
+		Nonce:      0,
 	}
 	block.mine()
+	block.Transactions = Mempool.TxToConfirm()
 	block.persist()
 	return &block
 }
